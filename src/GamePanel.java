@@ -5,6 +5,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import java.util.LinkedList;
+import java.awt.Font;
 
 public class GamePanel extends JPanel implements ActionListener, KeyListener {
     public static final int WIDTH = 600;
@@ -12,6 +13,8 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
     private static final int TILE_SIZE = 20;
     private static final int DELAY = 100;
     private Food food;
+    private GameState gameState;
+
 
     private Timer timer;
     private Snake snake;
@@ -26,20 +29,41 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         food = new Food(TILE_SIZE, WIDTH, HEIGHT);
         timer = new Timer(DELAY, this);
         timer.start();
+        gameState = GameState.RUNNING;
     }
+
     @Override
     public void actionPerformed(ActionEvent e) {
-        snake.move();
+        if (gameState == GameState.RUNNING) {
+            snake.move();
 
-        // Check if snake eats the food
-        SnakeSegment head = snake.getBody().getFirst();
-        if (head.x == food.getX() && head.y == food.getY()) {
-            food.respawn();
-        } else {
-            snake.trimTail(); // Snake only grows when eating
+            SnakeSegment head = snake.getBody().getFirst();
+
+            // Check wall collision
+            if (head.x < 0 || head.y < 0 || head.x >= WIDTH / TILE_SIZE || head.y >= HEIGHT / TILE_SIZE) {
+                gameState = GameState.GAME_OVER;
+                timer.stop();
+            }
+
+            // Check self collision
+            for (int i = 1; i < snake.getBody().size(); i++) {
+                SnakeSegment segment = snake.getBody().get(i);
+                if (head.x == segment.x && head.y == segment.y) {
+                    gameState = GameState.GAME_OVER;
+                    timer.stop();
+                    break;
+                }
+            }
+
+            // Food eaten
+            if (head.x == food.getX() && head.y == food.getY()) {
+                food.respawn();
+            } else {
+                snake.trimTail();
+            }
+
+            repaint();
         }
-
-        repaint();
     }
 
     @Override
@@ -47,7 +71,23 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         super.paintComponent(g);
         drawSnake(g);
         food.draw(g);
+
+        if (gameState == GameState.PAUSED) {
+            drawText(g, "PAUSED", Color.YELLOW);
+        } else if (gameState == GameState.GAME_OVER) {
+            drawText(g, "GAME OVER - Press R to Restart", Color.RED);
+        }
     }
+
+    private void drawText(Graphics g, String text, Color color) {
+        g.setColor(color);
+        g.setFont(new Font("Arial", Font.BOLD, 32));
+        FontMetrics fm = g.getFontMetrics();
+        int x = (WIDTH - fm.stringWidth(text)) / 2;
+        int y = HEIGHT / 2;
+        g.drawString(text, x, y);
+    }
+
 
 
     private void drawSnake(Graphics g) {
@@ -59,17 +99,45 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
-        switch (e.getKeyCode()) {
-            case KeyEvent.VK_UP -> snake.setDirection(Direction.UP);
-            case KeyEvent.VK_DOWN -> snake.setDirection(Direction.DOWN);
-            case KeyEvent.VK_LEFT -> snake.setDirection(Direction.LEFT);
-            case KeyEvent.VK_RIGHT -> snake.setDirection(Direction.RIGHT);
+        if (gameState == GameState.RUNNING) {
+            switch (e.getKeyCode()) {
+                case KeyEvent.VK_UP -> snake.setDirection(Direction.UP);
+                case KeyEvent.VK_DOWN -> snake.setDirection(Direction.DOWN);
+                case KeyEvent.VK_LEFT -> snake.setDirection(Direction.LEFT);
+                case KeyEvent.VK_RIGHT -> snake.setDirection(Direction.RIGHT);
+                case KeyEvent.VK_P -> pauseGame();
+            }
+        } else if (gameState == GameState.PAUSED && e.getKeyCode() == KeyEvent.VK_P) {
+            resumeGame();
+        }
+
+        if (gameState == GameState.GAME_OVER && e.getKeyCode() == KeyEvent.VK_R) {
+            restartGame();
         }
     }
+
 
     @Override
     public void keyReleased(KeyEvent e) {}
 
     @Override
     public void keyTyped(KeyEvent e) {}
+
+    private void pauseGame() {
+        gameState = GameState.PAUSED;
+        timer.stop();
+    }
+
+    private void resumeGame() {
+        gameState = GameState.RUNNING;
+        timer.start();
+    }
+
+    private void restartGame() {
+        snake = new Snake(WIDTH / TILE_SIZE / 2, HEIGHT / TILE_SIZE / 2);
+        food = new Food(TILE_SIZE, WIDTH, HEIGHT);
+        gameState = GameState.RUNNING;
+        timer.start();
+    }
+
 }
