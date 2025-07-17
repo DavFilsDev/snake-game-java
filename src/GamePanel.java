@@ -14,6 +14,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
     private static final int DELAY = 100;
     private Food food;
     private GameState gameState;
+    private int score;
 
 
     private Timer timer;
@@ -30,10 +31,12 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         timer = new Timer(DELAY, this);
         timer.start();
         gameState = GameState.RUNNING;
+        score = 0;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
+
         if (gameState == GameState.RUNNING) {
             snake.move();
 
@@ -58,6 +61,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
             // Food eaten
             if (head.x == food.getX() && head.y == food.getY()) {
                 food.respawn();
+                score += 10; // +10 points per food
             } else {
                 snake.trimTail();
             }
@@ -136,8 +140,15 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
     private void restartGame() {
         snake = new Snake(WIDTH / TILE_SIZE / 2, HEIGHT / TILE_SIZE / 2);
         food = new Food(TILE_SIZE, WIDTH, HEIGHT);
+        score = 0;
         gameState = GameState.RUNNING;
         timer.start();
+    }
+
+    private void drawScore(Graphics g) {
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 18));
+        g.drawString("Score: " + score, 10, 20);
     }
 
 }
