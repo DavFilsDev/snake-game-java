@@ -14,10 +14,12 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
     private static final int DELAY = 100;
     private Food food;
     private GameState gameState;
+    private int score;
 
 
     private Timer timer;
     private Snake snake;
+
 
     public GamePanel() {
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
@@ -30,6 +32,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         timer = new Timer(DELAY, this);
         timer.start();
         gameState = GameState.RUNNING;
+        score = 0;
     }
 
     @Override
@@ -138,6 +141,23 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         food = new Food(TILE_SIZE, WIDTH, HEIGHT);
         gameState = GameState.RUNNING;
         timer.start();
+    }
+
+    private void drawScore(Graphics g) {
+        String scoreText = "Score: " + score;
+
+        g.setFont(new Font("Arial", Font.BOLD, 20));
+
+        // Background rectangle for readability
+        int padding = 10;
+        int textWidth = g.getFontMetrics().stringWidth(scoreText);
+        int textHeight = g.getFontMetrics().getHeight();
+
+        g.setColor(Color.BLACK); // background box
+        g.fillRect(10 - padding / 2, 10 - padding / 2, textWidth + padding, textHeight + padding);
+
+        g.setColor(Color.GREEN); // text color
+        g.drawString(scoreText, 10, 10 + textHeight - 5);
     }
 
 }
