@@ -11,6 +11,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
     public static final int HEIGHT = 600;
     private static final int TILE_SIZE = 20;
     private static final int DELAY = 100;
+    private Food food;
 
     private Timer timer;
     private Snake snake;
@@ -22,13 +23,22 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         addKeyListener(this);
 
         snake = new Snake(WIDTH / TILE_SIZE / 2, HEIGHT / TILE_SIZE / 2);
+        food = new Food(TILE_SIZE, WIDTH, HEIGHT);
         timer = new Timer(DELAY, this);
         timer.start();
     }
-
     @Override
     public void actionPerformed(ActionEvent e) {
         snake.move();
+
+        // Check if snake eats the food
+        SnakeSegment head = snake.getBody().getFirst();
+        if (head.x == food.getX() && head.y == food.getY()) {
+            food.respawn();
+        } else {
+            snake.trimTail(); // Snake only grows when eating
+        }
+
         repaint();
     }
 
@@ -36,7 +46,9 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         drawSnake(g);
+        food.draw(g);
     }
+
 
     private void drawSnake(Graphics g) {
         g.setColor(Color.GREEN);
