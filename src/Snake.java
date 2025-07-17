@@ -22,8 +22,7 @@ public class Snake {
             case RIGHT -> x += 1;
         }
 
-        body.addFirst(new SnakeSegment(x, y)); // Add new head
-        body.removeLast(); // Remove tail
+        body.addFirst(new SnakeSegment(x, y));
     }
 
     public void setDirection(Direction newDirection) {
@@ -42,5 +41,9 @@ public class Snake {
 
     public Direction getDirection() {
         return direction;
+    }
+
+    public void trimTail() {
+        body.removeLast();
     }
 }
