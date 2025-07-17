@@ -20,6 +20,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
     private Timer timer;
     private Snake snake;
 
+
     public GamePanel() {
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
         setBackground(Color.BLACK);
@@ -146,9 +147,20 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
     }
 
     private void drawScore(Graphics g) {
-        g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.BOLD, 18));
-        g.drawString("Score: " + score, 10, 20);
+        String scoreText = "Score: " + score;
+
+        g.setFont(new Font("Arial", Font.BOLD, 20));
+
+        // Background rectangle for readability
+        int padding = 10;
+        int textWidth = g.getFontMetrics().stringWidth(scoreText);
+        int textHeight = g.getFontMetrics().getHeight();
+
+        g.setColor(Color.BLACK); // background box
+        g.fillRect(10 - padding / 2, 10 - padding / 2, textWidth + padding, textHeight + padding);
+
+        g.setColor(Color.GREEN); // text color
+        g.drawString(scoreText, 10, 10 + textHeight - 5);
     }
 
 }
